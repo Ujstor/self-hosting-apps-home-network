@@ -30,9 +30,14 @@ If you have reasons for not purchasing and using a Virtual Private Server (VPS),
 Nginx Proxy Manager acts as the gateway to your applications. Use it to create forwarding domains, redirections, and manage SSL.
 
 ### Initial Access:
-- Access the Nginx dashboard on port 81.
-- Default login credentials are provided in the nginx documentation snippet.
+- Access the Nginx dashboard on http://localhost:81
 - After the first login, change your admin details and password.
+- Default login credentials
+
+```bash
+Email:    admin@example.com
+Password: changeme
+``` 
 
 ### SSL Configuration:
 - Utilize Let's Encrypt for free SSL or provide your custom SSL certificates.
