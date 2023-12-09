@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  nginx-app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    networks:
+      - nginx
+  
+  web: #DNS used in nginx to point to container web:5000
+    image: ujstor/portfolio-web-go:1.0.2
+    ports:
+      - '${PORT_WEB}:${PORT_WEB}'
+    networks:
+      - nginx
+    depends_on:
+      - nginx-app
+  
+  notes:
+    image: ujstor/flask-notes:1.0.0
+    ports:
+      - "${PORT_NOTES}:${PORT_NOTES}"
+    networks:
+      - nginx
+    depends_on:
+      - nginx-app
+  
+  todo:
+    image: ujstor/todo-go:1.0.0
+    ports:
+      - "${PORT_TODO}:${PORT_TODO}"
+    depends_on:
+      - psql
+      - nginx-app
+    networks:
+      - nginx
+  
+  psql:
+    image: postgres:latest
+    build:
+      context: .
+      dockerfile: ./internal/database/initdb/Dockerfile.db
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - psql_volume_todo:/var/lib/postgresql/data
+      - ./internal/database/initdb/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - nginx
+    depends_on:
+      - nginx-app
+
+volumes:
+  psql_volume_todo:
+
+networks:
+  nginx:
+    external: true
