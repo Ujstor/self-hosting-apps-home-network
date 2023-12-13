@@ -1,36 +1,37 @@
 version: '3.8'
 
 services:
-  nginx-app:
-    image: 'jc21/nginx-proxy-manager:latest'
-    restart: unless-stopped
+  traefik:
+    image: traefik:latest
+    container_name: traefik
     ports:
-      - '80:80'
-      - '81:81'
-      - '443:443'
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./data:/data
-      - ./letsencrypt:/etc/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.toml:/traefik.toml
+      - ./traefik_dynamic.toml:/traefik_dynamic.toml
+      - ./acme.json:/acme.json
     networks:
-      - nginx
+      - traefik
   
-  web: #DNS used in nginx to point to container web:5000
+  web:
     image: ujstor/portfolio-web-go:1.0.2
     ports:
       - '${PORT_WEB}:${PORT_WEB}'
     networks:
-      - nginx
+      - traefik
     depends_on:
-      - nginx-app
+      - traefik
   
   notes:
     image: ujstor/flask-notes:1.0.0
     ports:
       - "${PORT_NOTES}:${PORT_NOTES}"
     networks:
-      - nginx
+      - traefik
     depends_on:
-      - nginx-app
+      - traefik 
   
   todo:
     image: ujstor/todo-go:1.0.0
@@ -38,9 +39,9 @@ services:
       - "${PORT_TODO}:${PORT_TODO}"
     depends_on:
       - psql
-      - nginx-app
+      - traefik
     networks:
-      - nginx
+      - traefik
   
   psql:
     image: postgres:latest
@@ -57,13 +58,13 @@ services:
       - psql_volume_todo:/var/lib/postgresql/data
       - ./internal/database/initdb/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - nginx
+      - traefik
     depends_on:
-      - nginx-app
+      - traefik
 
 volumes:
   psql_volume_todo:
 
 networks:
-  nginx:
+  traefik:
     external: true

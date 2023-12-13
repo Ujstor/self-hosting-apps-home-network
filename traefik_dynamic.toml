@@ -1,0 +1,46 @@
+[http.middlewares.simpleAuth.basicAuth]
+  users = [
+    "ujstor:$apr1$A7LbmVA7$OLsoACiJSHMOirdQeiClE."
+  ]
+
+[http.routers.api]
+  rule = "Host(`monitor.ujstor.com`)"
+  entrypoints = ["websecure"]
+  middlewares = ["simpleAuth"]
+  service = "api@internal"
+  [http.routers.api.tls]
+    certResolver = "lets-encrypt"
+
+[http.services.notes.loadBalancer]
+  [[http.services.notes.loadBalancer.servers]]
+    url = "http://192.168.2.115:5010"
+
+[http.routers.notes]
+  rule = "Host(`test-notes.ujstor.com`)"
+  entrypoints = ["websecure"]
+  service = "notes"
+  [http.routers.notes.tls]
+    certResolver = "lets-encrypt"
+
+[http.services.todo.loadBalancer]
+  [[http.services.todo.loadBalancer.servers]]
+    url = "http://192.168.2.115:8088"
+
+[http.routers.todo]
+  rule = "Host(`test-todo.ujstor.com`)"
+  entrypoints = ["websecure"]
+  middlewares = ["simpleAuth"]
+  service = "todo"
+  [http.routers.todo.tls]
+    certResolver = "lets-encrypt"
+
+[http.services.web.loadBalancer]
+  [[http.services.web.loadBalancer.servers]]
+    url = "http://192.168.2.115:5000"
+
+[http.routers.web]
+  rule = "Host(`test-web.ujstor.com`)"
+  entrypoints = ["websecure"]
+  service = "web"
+  [http.routers.web.tls]
+    certResolver = "lets-encrypt"
