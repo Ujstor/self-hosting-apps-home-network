@@ -1,7 +1,7 @@
 run:
-	@echo Starting nginx reverse proxy & apps
+	@echo Starting reverse proxy & apps
 	@docker compose up -d
-	@open nginx dashbort http://localhost:81
+	@open traefik dashbort http://monitor.<domain>
 
 down:
 	@echo Shutdown everything
